@@ -26,13 +26,14 @@ DEFAULT_LOG_FILE = os.path.join(LOGS_DIR, 'gcloud_tray_logger.log')
 
 # ─── Default settings ─────────────────────────────────────────
 DEFAULTS = {
-    "default_project": os.environ.get("GCLOUD_PROJECT", "your-project-id"),
-    "log_file"       : DEFAULT_LOG_FILE,
-    "max_log_size"   : 5 * 1024 * 1024,
-    "backup_count"   : 3,
-    "log_per_date"   : True,
-    "run_on_startup" : False,
-    "start_minimized": False,
+    "default_project"   : os.environ.get("GCLOUD_PROJECT", "your-project-id"),
+    "log_file"          : DEFAULT_LOG_FILE,
+    "max_log_size"      : 5 * 1024 * 1024,
+    "backup_count"      : 3,
+    "log_per_date"      : True,
+    "run_on_startup"    : False,
+    "start_minimized"   : False,
+    "auto_start_logging": False,
 }
 
 
@@ -85,7 +86,7 @@ def show_preferences(parent=None, on_save=None):
 
     win = tk.Toplevel(parent) if parent else tk.Tk()
     win.title("Preferences")
-    win.geometry("450x360")
+    win.geometry("450x380")
     if parent:
         win.transient(parent)
         win.grab_set()
@@ -142,19 +143,28 @@ def show_preferences(parent=None, on_save=None):
         variable=mini_var
     ).grid(row=6, column=1, sticky="w", padx=10, pady=5)
 
+    # ── Auto-start logging checkbox ───────────────────────────
+    auto_var = tk.BooleanVar(value=cfg["auto_start_logging"])
+    ttk.Checkbutton(
+        win,
+        text="Auto-start logging on launch",
+        variable=auto_var
+    ).grid(row=7, column=1, sticky="w", padx=10, pady=5)
+
     # ── Buttons ───────────────────────────────────────────────
     btn_frame = ttk.Frame(win)
-    btn_frame.grid(row=7, column=0, columnspan=2, pady=20)
+    btn_frame.grid(row=8, column=0, columnspan=2, pady=20)
 
     def on_ok():
         new_cfg = {
-            "default_project": proj_var.get().strip(),
-            "log_file"       : log_var.get().strip(),
-            "max_log_size"   : size_var.get(),
-            "backup_count"   : back_var.get(),
-            "log_per_date"   : logdate_var.get(),
-            "run_on_startup" : startup_var.get(),
-            "start_minimized": mini_var.get()
+            "default_project"   : proj_var.get().strip(),
+            "log_file"          : log_var.get().strip(),
+            "max_log_size"      : size_var.get(),
+            "backup_count"      : back_var.get(),
+            "log_per_date"      : logdate_var.get(),
+            "run_on_startup"    : startup_var.get(),
+            "start_minimized"   : mini_var.get(),
+            "auto_start_logging": auto_var.get(),
         }
         save_config(new_cfg)
         if callable(on_save):

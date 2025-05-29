@@ -25,21 +25,32 @@ def create_menu(root):
 
     # File menu
     filemenu = tk.Menu(menubar, tearoff=0)
-    filemenu.add_command(label="Start Logging", accelerator="Ctrl+R", command=_action('start_logging'))
-    filemenu.add_command(label="Stop Logging", accelerator="Ctrl+T", command=_action('stop_logging'))
-    filemenu.add_command(label="Clear Log Panel", accelerator="Ctrl+L", command=_action('clear_log_panel'))
+    filemenu.add_command(
+        label="Start Logging", accelerator="Ctrl+R", command=_action('start_logging'))
+    filemenu.add_command(
+        label="Stop Logging", accelerator="Ctrl+T", command=_action('stop_logging'))
+    filemenu.add_command(
+        label="Clear Log Panel", accelerator="Ctrl+L", command=_action('clear_log_panel'))
     filemenu.add_separator()
-    filemenu.add_command(label="Send to Tray", accelerator="Ctrl+M", command=_action('hide_to_tray'))
+    filemenu.add_command(
+        label="Send to Tray", accelerator="Ctrl+M", command=_action('hide_to_tray'))
     filemenu.add_separator()
-    filemenu.add_command(label="Open Log File…", accelerator="Ctrl+O", command=_action('open_log_file'))
-    filemenu.add_command(label="Export Logs…", accelerator="Ctrl+E", command=_action('export_logs'))
+    filemenu.add_command(
+        label="Open Log File…", accelerator="Ctrl+O", command=_action('open_log_file'))
+    filemenu.add_command(
+        label="Export Logs…", accelerator="Ctrl+E", command=_action('export_logs'))
+    filemenu.add_command(
+        label="Batch Export Logs…", accelerator="Ctrl+Shift+E",
+        command=_action('batch_export_logs'))
     filemenu.add_separator()
-    filemenu.add_command(label="Exit", accelerator="Ctrl+Q", command=_action('exit_app'))
+    filemenu.add_command(
+        label="Exit", accelerator="Ctrl+Q", command=_action('exit_app'))
     menubar.add_cascade(label="File", menu=filemenu)
 
     # Help menu
     helpmenu = tk.Menu(menubar, tearoff=0)
-    helpmenu.add_command(label="Manual",        accelerator="F1", command=lambda: show_manual(root))
+    helpmenu.add_command(
+        label="Manual", accelerator="F1", command=lambda: show_manual(root))
     menubar.add_cascade(label="Help", menu=helpmenu)
 
     # Attach menu bar
@@ -59,6 +70,8 @@ def create_menu(root):
         ('<Control-O>', 'open_log_file'),
         ('<Control-e>', 'export_logs'),
         ('<Control-E>', 'export_logs'),
+        ('<Control-Shift-e>', 'batch_export_logs'),
+        ('<Control-Shift-E>', 'batch_export_logs'),
         ('<Control-p>', 'open_preferences'),
         ('<Control-P>', 'open_preferences'),
         ('<Control-q>', 'exit_app'),

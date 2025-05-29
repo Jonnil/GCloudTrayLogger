@@ -20,7 +20,6 @@ def create_menu(root):
             if callable(method):
                 return method()
             else:
-                # optional: log or warn about missing implementation
                 print(f"Menu action '{method_name}' is not implemented.")
         return _inner
 
@@ -30,6 +29,8 @@ def create_menu(root):
     filemenu.add_command(label="Stop Logging", accelerator="Ctrl+T", command=_action('stop_logging'))
     filemenu.add_command(label="Clear Log Panel", accelerator="Ctrl+L", command=_action('clear_log_panel'))
     filemenu.add_separator()
+    filemenu.add_command(label="Send to Tray", accelerator="Ctrl+M", command=_action('hide_to_tray'))
+    filemenu.add_separator()
     filemenu.add_command(label="Open Log File…", accelerator="Ctrl+O", command=_action('open_log_file'))
     filemenu.add_command(label="Export Logs…", accelerator="Ctrl+E", command=_action('export_logs'))
     filemenu.add_separator()
@@ -38,7 +39,7 @@ def create_menu(root):
 
     # Help menu
     helpmenu = tk.Menu(menubar, tearoff=0)
-    helpmenu.add_command(label="Manual", accelerator="F1", command=lambda: show_manual(root))
+    helpmenu.add_command(label="Manual",        accelerator="F1", command=lambda: show_manual(root))
     menubar.add_cascade(label="Help", menu=helpmenu)
 
     # Attach menu bar
@@ -52,6 +53,8 @@ def create_menu(root):
         ('<Control-T>', 'stop_logging'),
         ('<Control-l>', 'clear_log_panel'),
         ('<Control-L>', 'clear_log_panel'),
+        ('<Control-m>', 'hide_to_tray'),
+        ('<Control-M>', 'hide_to_tray'),
         ('<Control-o>', 'open_log_file'),
         ('<Control-O>', 'open_log_file'),
         ('<Control-e>', 'export_logs'),
@@ -60,10 +63,11 @@ def create_menu(root):
         ('<Control-P>', 'open_preferences'),
         ('<Control-q>', 'exit_app'),
         ('<Control-Q>', 'exit_app'),
-        ('<F1>', None),  # manual handled separately
+        ('<F1>',      None),  # handled below
     ]
     for key, method in shortcuts:
         if method:
             root.bind_all(key, lambda e, m=method: _action(m)())
         else:
+            # F1 → Manual
             root.bind_all(key, lambda e: show_manual(root))

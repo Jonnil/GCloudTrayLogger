@@ -15,25 +15,24 @@ from tkinter import ttk
 
 # ─── Determine config & logs directory ─────────────────────────
 if os.name == 'nt':
-    # Windows: %APPDATA%
     BASE_CONFIG_DIR = os.getenv('APPDATA', os.path.expanduser('~'))
 else:
-    # Unix: ~/.config
     BASE_CONFIG_DIR = os.path.join(os.path.expanduser('~'), '.config')
 
-CONFIG_DIR = os.path.join(BASE_CONFIG_DIR, 'GCloudTrayLogger')
+CONFIG_DIR       = os.path.join(BASE_CONFIG_DIR, 'GCloudTrayLogger')
 PREFERENCES_FILE = os.path.join(CONFIG_DIR, 'GCloudTrayLogger_preferences.json')
-
-# We'll place logs in a "logs" subdirectory by default
-LOGS_DIR = os.path.join(CONFIG_DIR, 'logs')
+LOGS_DIR         = os.path.join(CONFIG_DIR, 'logs')
 DEFAULT_LOG_FILE = os.path.join(LOGS_DIR, 'gcloud_tray_logger.log')
 
-# Default settings
+# ─── Default settings ─────────────────────────────────────────
 DEFAULTS = {
     "default_project": os.environ.get("GCLOUD_PROJECT", "your-project-id"),
-    "log_file"      : DEFAULT_LOG_FILE,
-    "max_log_size"  : 5 * 1024 * 1024,
-    "backup_count"  : 3,
+    "log_file"       : DEFAULT_LOG_FILE,
+    "max_log_size"   : 5 * 1024 * 1024,
+    "backup_count"   : 3,
+    "log_per_date"   : True,
+    "run_on_startup" : False,
+    "start_minimized": False,
 }
 
 
@@ -42,7 +41,6 @@ def load_config():
     Load settings from PREFERENCES_FILE, or return a copy of DEFAULTS.
     Ensures CONFIG_DIR and LOGS_DIR exist, and makes log_file absolute.
     """
-    # Create directories
     os.makedirs(CONFIG_DIR, exist_ok=True)
     os.makedirs(LOGS_DIR, exist_ok=True)
 
@@ -50,7 +48,7 @@ def load_config():
         try:
             with open(PREFERENCES_FILE, 'r') as f:
                 data = json.load(f)
-            # Fill missing keys
+            # Fill in any missing keys
             for key, default in DEFAULTS.items():
                 data.setdefault(key, default)
         except Exception:
@@ -58,11 +56,10 @@ def load_config():
     else:
         data = DEFAULTS.copy()
 
-    # Normalize log_file to absolute path under CONFIG_DIR if necessary
+    # Normalize log_file path
     lf = data.get("log_file", DEFAULT_LOG_FILE)
     if not os.path.isabs(lf):
         lf = os.path.join(CONFIG_DIR, lf)
-    # Ensure the directory exists
     os.makedirs(os.path.dirname(lf), exist_ok=True)
     data["log_file"] = lf
 
@@ -73,66 +70,91 @@ def save_config(config: dict):
     """
     Save the given settings dict to PREFERENCES_FILE.
     """
-    # Make sure dirs exist
     os.makedirs(CONFIG_DIR, exist_ok=True)
     os.makedirs(LOGS_DIR, exist_ok=True)
-
     with open(PREFERENCES_FILE, 'w') as f:
         json.dump(config, f, indent=4)
 
 
 def show_preferences(parent=None, on_save=None):
     """
-    (Optional) Dialog to edit preferences.
+    Dialog to edit preferences.
     Calls on_save(updated_config) if provided.
     """
     cfg = load_config()
 
     win = tk.Toplevel(parent) if parent else tk.Tk()
     win.title("Preferences")
-    win.geometry("400x280")
+    win.geometry("450x360")
     if parent:
         win.transient(parent)
         win.grab_set()
 
-    # Default Project ID
+    # ── Default Project ID ────────────────────────────────────
     ttk.Label(win, text="Default Project ID:")\
         .grid(row=0, column=0, sticky="w", padx=10, pady=5)
     proj_var = tk.StringVar(value=cfg["default_project"])
     ttk.Entry(win, textvariable=proj_var, width=40)\
         .grid(row=0, column=1, padx=10, pady=5)
 
-    # Log file path
+    # ── Log file path ─────────────────────────────────────────
     ttk.Label(win, text="Log File Path:")\
         .grid(row=1, column=0, sticky="w", padx=10, pady=5)
     log_var = tk.StringVar(value=cfg["log_file"])
     ttk.Entry(win, textvariable=log_var, width=40)\
         .grid(row=1, column=1, padx=10, pady=5)
 
-    # Max log size
+    # ── Max log size ──────────────────────────────────────────
     ttk.Label(win, text="Max Log Size (bytes):")\
         .grid(row=2, column=0, sticky="w", padx=10, pady=5)
     size_var = tk.IntVar(value=cfg["max_log_size"])
     ttk.Entry(win, textvariable=size_var, width=40)\
         .grid(row=2, column=1, padx=10, pady=5)
 
-    # Backup count
+    # ── Backup count ──────────────────────────────────────────
     ttk.Label(win, text="Backup Count:")\
         .grid(row=3, column=0, sticky="w", padx=10, pady=5)
     back_var = tk.IntVar(value=cfg["backup_count"])
     ttk.Entry(win, textvariable=back_var, width=40)\
         .grid(row=3, column=1, padx=10, pady=5)
 
-    # Buttons
+    # ── Daily logs checkbox ───────────────────────────────────
+    logdate_var = tk.BooleanVar(value=cfg["log_per_date"])
+    ttk.Checkbutton(
+        win,
+        text="One log file per day",
+        variable=logdate_var
+    ).grid(row=4, column=1, sticky="w", padx=10, pady=5)
+
+    # ── Run on startup checkbox ───────────────────────────────
+    startup_var = tk.BooleanVar(value=cfg["run_on_startup"])
+    ttk.Checkbutton(
+        win,
+        text="Launch at system startup",
+        variable=startup_var
+    ).grid(row=5, column=1, sticky="w", padx=10, pady=5)
+
+    # ── Start minimized checkbox ──────────────────────────────
+    mini_var = tk.BooleanVar(value=cfg["start_minimized"])
+    ttk.Checkbutton(
+        win,
+        text="Start minimized to tray",
+        variable=mini_var
+    ).grid(row=6, column=1, sticky="w", padx=10, pady=5)
+
+    # ── Buttons ───────────────────────────────────────────────
     btn_frame = ttk.Frame(win)
-    btn_frame.grid(row=4, column=0, columnspan=2, pady=20)
+    btn_frame.grid(row=7, column=0, columnspan=2, pady=20)
 
     def on_ok():
         new_cfg = {
             "default_project": proj_var.get().strip(),
-            "log_file"      : log_var.get().strip(),
-            "max_log_size"  : size_var.get(),
-            "backup_count"  : back_var.get()
+            "log_file"       : log_var.get().strip(),
+            "max_log_size"   : size_var.get(),
+            "backup_count"   : back_var.get(),
+            "log_per_date"   : logdate_var.get(),
+            "run_on_startup" : startup_var.get(),
+            "start_minimized": mini_var.get()
         }
         save_config(new_cfg)
         if callable(on_save):
@@ -142,9 +164,9 @@ def show_preferences(parent=None, on_save=None):
     def on_cancel():
         win.destroy()
 
-    ttk.Button(btn_frame, text="OK",      command=on_ok)\
+    ttk.Button(btn_frame, text="OK",     command=on_ok)\
         .grid(row=0, column=0, padx=10)
-    ttk.Button(btn_frame, text="Cancel",  command=on_cancel)\
+    ttk.Button(btn_frame, text="Cancel", command=on_cancel)\
         .grid(row=0, column=1, padx=10)
 
     if not parent:

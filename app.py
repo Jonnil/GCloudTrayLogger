@@ -32,6 +32,7 @@ from cloud_utils         import open_cloud_settings
 from startup_utils       import enable_run_on_startup
 from install_gcloud_sdk  import install_gcloud_sdk
 from sprite_animator     import SpriteAnimator
+from gcloud_auth_login import gcloud_auth_login
 
 from clear_log_panel     import clear_log_panel   as clear_log_panel_helper
 from open_log_file       import open_log_file      as open_log_file_helper
@@ -128,6 +129,14 @@ class App(tk.Tk):
             .grid(row=0, column=2, padx=5)
         ttk.Button(frm, text="Install gcloud SDK", command=self._install_gcloud_sdk)\
             .grid(row=0, column=3, padx=5)
+        ttk.Button(frm, text="Authenticate…",
+            command=lambda: gcloud_auth_login(
+                project_id=self.project_var.get().strip(),
+                output_callback=self._append_log,
+                status_callback=lambda msg: self.infobar.set_message(msg)
+            )
+        ).grid(row=0, column=4, padx=5)
+
         proj_entry.bind("<FocusOut>", lambda e: self._save_and_apply())
         proj_entry.bind("<Return>",   lambda e: self._save_and_apply())
 

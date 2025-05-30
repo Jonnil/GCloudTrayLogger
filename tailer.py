@@ -45,8 +45,6 @@ def tail_logs(project_id: str, out_queue, stop_event):
         out_queue.put(f"Warning: could not get gcloud version ({e})\n")
 
     # ── Step 2: begin tailing ──────────────────────────────────
-    out_queue.put("Waiting for new log entries...\n")
-
     if is_windows:
         tail_cmd = [
             "pwsh", "-NoLogo", "-NoProfile", "-NonInteractive",
